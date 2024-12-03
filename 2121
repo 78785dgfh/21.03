@@ -1,0 +1,47 @@
+1) public class Main {
+    public static void main(String[] args) {
+        double[] array = new double[100_000_000];
+
+        long startTime = System.nanoTime();
+
+        for (int i = 0; i < array.length; i++) {
+            array[i] = 1.14 * Math.cos(i) * Math.sin(i * 0.2) * Math.cos(i / 1.2);
+        }
+
+        long endTime = System.nanoTime();
+        long duration = endTime - startTime;
+        System.out.println("Время выполнения для одного потока: " + duration / 1_000_000 + " миллисекунд");
+    }
+}
+
+
+2) public class Main {
+    public static void main(String[] args) throws InterruptedException {
+        double[] array = new double[100_000_000];
+
+        Thread[] threads = new Thread[4];
+        int partSize = array.length / 4;
+
+        long startTime = System.nanoTime();
+
+        for (int t = 0; t < 4; t++) {
+            final int threadIndex = t;
+            threads[t] = new Thread(() -> {
+                int start = threadIndex * partSize;
+                int end = (threadIndex + 1) * partSize;
+                for (int i = start; i < end; i++) {
+                    array[i] = 1.14 * Math.cos(i) * Math.sin(i * 0.2) * Math.cos(i / 1.2);
+                }
+            });
+            threads[t].start();
+        }
+
+        for (int t = 0; t < 4; t++) {
+            threads[t].join();
+        }
+
+        long endTime = System.nanoTime();
+        long duration = endTime - startTime;
+        System.out.println("Время выполнения для 4 потоков: " + duration / 1_000_000 + " миллисекунд");
+    }
+}
